@@ -1,0 +1,49 @@
+﻿In order to make surface export work for non planar faces and quasi-non planar surfaces.
+
+Problem.	Current face save technique relies on single surface brep representation for any PFFace 
+			This is problematic for non planar faces with more than 4 vertices.
+			With nurbs there is no clear solution to have a curved single surface with perfectly straight edges.
+			This creates problems with geometry exports that need perfect cohesion between faces and cells.
+Current solution:
+			Planarize the PolyFrame beyond the planarity tolerance of Rhino so faces can be saved as planar surface trims. 
+			This is problematic as there is no clear threshold for that in Rhino. 
+
+Solution 1. Implement polySurface as face import, export and build.
+1.1 Implement a UserDictionary entry for each Brep that defines it as a face.
+	{"PolyFace":True} will be stored in the PolySurface (multi face Brep)
+	Also in each face the same entry "Id":int will be stored.
+	Hopefully the entry can survive even after explosion so it can be referenced.
+	I need to implement routines to recognize face input as PolySurface (with used dictionary entry)
+	This can prove problematic if input is exploded beforehand. 
+	If explosion is implemented inside the component it will look at the PolyFace tag and avoid splitting. 
+
+1.2 ReImplement routine to save non planar faces with vertex count > 4 as polySurfaces.
+1.3 ALternatively to circumvent looking into brep faces PolyFaces can be saved as groups of quads and triangles
+	Each subFace will have the same Id. (this needs to be Unique - consider using a GUID) 
+		1.3.1 For reloading there will be no problems as only the vertex geometry counts (this will be saved)
+		1.3.2 For building a PolyFrame each separate subFace is parsed into the same face, based on the unique Id
+1.4 Cell breps will be the sum of all BrepFaces from the PF faces in a cell  
+Advantages		- Obvious - no more problems with surface saving. Crips surfaces and connections even with non planar faces 
+				- Not Obvious - builds on the already created infrastructure of Brep/PolySurface with only some additions.
+							no major changes
+Disadvantages	- Split faces will create confusion for the user. A stricter workflow needs to be enforced (no exploding surfaces)
+				
+
+Solution 2. Implement mesh input and output for the faces. (With nGon from R6)
+2.1 Implement mesh as face output. For faces with more than 4 vertices multiple mesh faces will be created.
+2.2 Important - no extra mesh vertices will be added besides the face vertices. Mesh vertex will have an "Id" UserDict entry
+2.3 For Rhino 6 - Faces with > 4 verts will create also a Ngon entry in the mesh - this will eliminate the edges between meshfaces 
+2.4 Load from geometry container as a mesh will only use the vertices from the mesh - this can work with fully welded mesh as long as 
+	the vertices have "Id" entry and mesh or part of mesh has Primal/Dual Json saved as USerDictionary entry.
+2.5 Build from Mesh. Each Ngon will be considered a face. MeshFaces that are not in Ngons will be considered standalone tri/quad faces
+
+
+Disadvantages	- There are no real N-Gon tools in Rhino now - I need to build some (make ngon, break ngon, sign ngon )
+				- NGon might no be supported for third party export (does this matter ?)
+				- New load, build and save routines need to be created.
+				- Tool will be restricted to Rhino 6. 
+Advantages		- No more problem with face saving. All edges are linear - therefore unique geometry 
+				- Should be considerably faster in saving and maybe also in loading 
+				- With NGon there will be no seam inside faces .
+
+

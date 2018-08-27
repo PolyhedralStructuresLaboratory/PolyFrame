@@ -1,0 +1,10 @@
+﻿Eliminate outer points from selection - with option 
+
+Fix perp - update mesh 
+
+Type in - same type goes out 
+Curves - curves
+SingleFaces - Single Faces 
+PolySurfaces - PolySurfaces
+Mesh - multiple faces, or polylines all => mesh cells 
+Mesh single face or single ngon all = > mesh face 
