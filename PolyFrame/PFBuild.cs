@@ -106,6 +106,8 @@ namespace PolyFrame
 
                     if (deleteOriginal) Rhino.RhinoDoc.ActiveDoc.Objects.Delete(ids, true);
                     doc.Views.Redraw();
+                    Rhino.RhinoApp.WriteLine($"Constructed a PolyFrame object with {foam.Cells.Count} cells, {foam.Faces.Count} half-faces, {foam.Edges.Count} half-edges and {foam.Vertices.Count} vertices.");
+
                     return Result.Success;
 
                 }
@@ -116,9 +118,9 @@ namespace PolyFrame
                 }
 
             }
-            catch (PolyFrameworkException pfE)
+            catch (Exception pfE)
             {
-                RhinoApp.WriteLine(pfE.Message);
+                RhinoApp.WriteLine(pfE.Message + " Press <Esc> to continue.");
                 foam.Hide();
                 return Result.Failure;
             }

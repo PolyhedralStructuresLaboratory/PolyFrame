@@ -548,6 +548,8 @@ namespace PolyFramework
             if (jsonFoam == "") return new PFoam();
             // get the foam dict
             JavaScriptSerializer json = new JavaScriptSerializer();
+            json.MaxJsonLength = 2147483647;
+
             var foamPropDict = json.Deserialize<Dictionary<string, object>>(jsonFoam);
             // create the foam and add its ID
             PFoam foam = new PFoam()

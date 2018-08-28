@@ -190,11 +190,14 @@ namespace PolyFrame
                     Rhino.RhinoApp.WriteLine("Primal deleted. You can restore it using PFDual command on the result.");
                 }
 
+                Rhino.RhinoApp.WriteLine($"Constructed a PolyFrame object (dual) with {dual.Cells.Count} cells, {dual.Faces.Count} half-faces, {dual.Edges.Count} half-edges and {dual.Vertices.Count} vertices.");
+
+
 
             }
             catch (PolyFrameworkException pfE)
             {
-                RhinoApp.WriteLine(pfE.Message);
+                RhinoApp.WriteLine(pfE.Message + " Press <Esc> to continue.");
                 primal.Hide();
                 dual.Hide();
                 return Result.Failure;

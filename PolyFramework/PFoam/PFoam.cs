@@ -2204,7 +2204,7 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
 
 
 
-        public double VolumeSphCyl(double minRadius, double maxRadius, out IList<Mesh> geometry)
+        public double VolumeSphCyl(double minRadius, double maxRadius, out IList<Mesh> geometry, bool createGeo = false)
         {
 
             var intEdges = new List<PFEdge>();
@@ -2258,20 +2258,24 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
 
             // create the geometry too 
             // cylinders - 
-            foreach (var edge in intEdges)
+            if (createGeo)
             {
-                var edgeVec = edge.GetDirectionVector(); // from V1 to V0
-                // make circle at V1 + V1 radius 
-                var circleCenter = edge.Vertices[1].Point + edgeVec * vertRadiuses[edge.Vertices[1]];
-                var circlePlane = new Plane(circleCenter, edgeVec);
-                var circle = new Circle(circlePlane, edgeRadiuses[edge.Id]);
-                var cylinder = new Cylinder(circle, edgeLengths[edge.Id]);
-                geometry.Add(Mesh.CreateFromCylinder(cylinder, 1, 24));
-            }
+                foreach (var edge in intEdges)
+                {
+                    var edgeVec = edge.GetDirectionVector(); // from V1 to V0
+                                                             // make circle at V1 + V1 radius 
+                    var circleCenter = edge.Vertices[1].Point + edgeVec * vertRadiuses[edge.Vertices[1]];
+                    var circlePlane = new Plane(circleCenter, edgeVec);
+                    var circle = new Circle(circlePlane, edgeRadiuses[edge.Id]);
+                    var cylinder = new Cylinder(circle, edgeLengths[edge.Id]);
+                    geometry.Add(Mesh.CreateFromCylinder(cylinder, 1, 24));
+                }
 
-            foreach (var vert in intVertices)
-            {
-                geometry.Add(Mesh.CreateFromSphere(new Sphere(vert.Point, vertRadiuses[vert]), 24, 24));
+                foreach (var vert in intVertices)
+                {
+                    geometry.Add(Mesh.CreateFromSphere(new Sphere(vert.Point, vertRadiuses[vert]), 24, 24));
+                }
+
             }
 
 
@@ -2290,9 +2294,9 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
 
 
             JavaScriptSerializer json = new JavaScriptSerializer();
-
+            json.MaxJsonLength = 2147483647;
             string jsonData = json.Serialize(SerializeDict());
-
+            //var len = jsonData.Length;
             return jsonData;
         }
 
