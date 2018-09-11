@@ -52,8 +52,8 @@ using Rhino.PlugIns;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.1.7.5")]
-[assembly: AssemblyFileVersion("0.1.7.5")]
+[assembly: AssemblyVersion("0.1.7.6")]
+[assembly: AssemblyFileVersion("0.1.7.6")]
 
 // Make compatible with Rhino Installer Engine
 [assembly: AssemblyInformationalVersion("2")]

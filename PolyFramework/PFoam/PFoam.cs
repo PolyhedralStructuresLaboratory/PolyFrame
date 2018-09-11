@@ -2247,8 +2247,8 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
             }
             foreach (var edge in intEdges)
             {
-
-                volume += Math.Pow(edgeRadiuses[edge.Id], 2) * Math.PI * edgeLengths[edge.Id];
+                if (edgeLengths[edge.Id] > 0)
+                    volume += Math.Pow(edgeRadiuses[edge.Id], 2) * Math.PI * edgeLengths[edge.Id];
 
 
 
@@ -2262,13 +2262,17 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
             {
                 foreach (var edge in intEdges)
                 {
-                    var edgeVec = edge.GetDirectionVector(); // from V1 to V0
-                                                             // make circle at V1 + V1 radius 
-                    var circleCenter = edge.Vertices[1].Point + edgeVec * vertRadiuses[edge.Vertices[1]];
-                    var circlePlane = new Plane(circleCenter, edgeVec);
-                    var circle = new Circle(circlePlane, edgeRadiuses[edge.Id]);
-                    var cylinder = new Cylinder(circle, edgeLengths[edge.Id]);
-                    geometry.Add(Mesh.CreateFromCylinder(cylinder, 1, 24));
+                    if (edgeLengths[edge.Id] > 0)
+                    {
+                        var edgeVec = edge.GetDirectionVector(); // from V1 to V0
+                                                                 // make circle at V1 + V1 radius 
+                        var circleCenter = edge.Vertices[1].Point + edgeVec * vertRadiuses[edge.Vertices[1]];
+                        var circlePlane = new Plane(circleCenter, edgeVec);
+                        var circle = new Circle(circlePlane, edgeRadiuses[edge.Id]);
+                        var cylinder = new Cylinder(circle, edgeLengths[edge.Id]);
+                        geometry.Add(Mesh.CreateFromCylinder(cylinder, 1, 24));
+                    }
+                        
                 }
 
                 foreach (var vert in intVertices)
