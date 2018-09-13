@@ -86,6 +86,7 @@
       <DependentUpon>PlanarWinForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\MarchingCubes.cs" />
     <Compile Include="Utilities\PFException.cs" />
     <Compile Include="Utilities\Util.cs" />
     <Compile Include="Utilities\PickAndInput.cs" />

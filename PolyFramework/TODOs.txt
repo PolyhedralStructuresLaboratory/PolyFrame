@@ -1,8 +1,8 @@
-﻿Eliminate outer points from selection - with option 
+﻿Eliminate outer points from selection - with option - done
 
-Fix perp - update mesh 
+Fix perp - update mesh - done 
 
-Type in - same type goes out 
+Type in - same type goes out - done
 Curves - curves
 SingleFaces - Single Faces 
 PolySurfaces - PolySurfaces
