@@ -2204,7 +2204,7 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
 
 
 
-        public double VolumeSphCyl(double minRadius, double maxRadius, out IList<Mesh> geometry, bool createGeo = false)
+        public double VolumeSphCyl(double minRadius, double maxRadius, out IList<Mesh> geometry, out Dictionary<int, double> edgeRadiusesOut,  bool createGeo = false)
         {
 
             var intEdges = new List<PFEdge>();
@@ -2255,7 +2255,7 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
             }
             geometry = new List<Mesh>();
 
-
+            edgeRadiusesOut = edgeRadiuses;
             // create the geometry too 
             // cylinders - 
             if (createGeo)
