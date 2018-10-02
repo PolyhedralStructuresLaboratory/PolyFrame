@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Rhino.Geometry;
+using System.Collections.Concurrent;
 
 namespace PolyFramework.Utilities
 {
@@ -74,6 +75,7 @@ namespace PolyFramework.Utilities
 
 
             // make cubes 
+            var meshFaces = new List<Tuple<Voxel, Voxel>[]>();
             var mesh = new Mesh();
             var vertexDict = new Dictionary<Tuple<Voxel, Voxel>, int>();
             for (int x = 0; x < voxels.XCount - 1; x++)
@@ -89,12 +91,109 @@ namespace PolyFramework.Utilities
                 }
             }
 
+            //mesh.Faces.AddFaces(meshFaces);
             return mesh;
 
 
         }
-        protected abstract void March(Cube cube, Mesh mesh, Dictionary<Tuple<Voxel, Voxel>, int> vertDict);
 
+        /// <summary>
+        /// This generates the cubes and uses an appropriate method to march them
+        /// Method assumes all the voxels are populated with values (NaN is considered a value outside the search)
+        /// </summary>
+        /// <param name="voxels"></param>
+        public virtual Mesh Generate_Para(Voxels voxels)
+        {
+            // local method for cube making from 1 voxel 
+            Cube CubeFromVoxel(Voxel voxel)
+            {
+                Cube cube = new Cube()
+                {
+                    Vertices = new Voxel[]
+                    {
+                        voxel,
+                        voxels[new Tuple<int, int, int>(voxel.Ix+1, voxel.Iy, voxel.Iz)],
+                        voxels[new Tuple<int, int, int>(voxel.Ix+1, voxel.Iy+1, voxel.Iz)],
+                        voxels[new Tuple<int, int, int>(voxel.Ix, voxel.Iy+1, voxel.Iz)],
+                        voxels[new Tuple<int, int, int>(voxel.Ix, voxel.Iy, voxel.Iz+1)],
+                        voxels[new Tuple<int, int, int>(voxel.Ix+1, voxel.Iy, voxel.Iz+1)],
+                        voxels[new Tuple<int, int, int>(voxel.Ix+1, voxel.Iy+1, voxel.Iz+1)],
+                        voxels[new Tuple<int, int, int>(voxel.Ix, voxel.Iy+1, voxel.Iz+1)],
+                    }
+                };
+
+                return cube;
+            }
+
+
+            // make cubes 
+            var meshFaces = new ConcurrentStack<Tuple<Voxel, Voxel>[]>();
+            var mesh = new Mesh();
+            var vertexDict = new ConcurrentDictionary<Tuple<Voxel, Voxel>, Point3d>();
+            Parallel.For(0, voxels.XCount - 1, x =>
+              {
+                  for (int y = 0; y < voxels.YCount - 1; y++)
+                  {
+                      for (int z = 0; z < voxels.ZCount - 1; z++)
+                      {
+                          var cb = CubeFromVoxel(voxels[new Tuple<int, int, int>(x, y, z)]);
+                          // here march the cube 
+                          March_Para(cb, meshFaces, vertexDict);
+                      }
+                  }
+              });
+
+
+            // make the mesh from the vertices and face arrays - this is single thread 
+            var meshVertDict = new Dictionary<Tuple<Voxel, Voxel>, int>();
+            foreach (var mFAce in meshFaces)
+            {
+                var faceVertIndexes = new int[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    if (meshVertDict.ContainsKey(mFAce[i]))
+                    {
+                        faceVertIndexes[i] = meshVertDict[mFAce[i]];
+                    }
+                    else if (meshVertDict.ContainsKey(new Tuple<Voxel, Voxel>(mFAce[i].Item2, mFAce[i].Item1)))
+                    {
+                        faceVertIndexes[i] = meshVertDict[new Tuple<Voxel, Voxel>(mFAce[i].Item2, mFAce[i].Item1)];
+                    }
+                    else
+                    {
+                        mesh.Vertices.Add(vertexDict[mFAce[i]]);
+                        meshVertDict.Add(mFAce[i], mesh.Vertices.Count - 1);
+                        faceVertIndexes[i] = mesh.Vertices.Count - 1;
+                    }
+                }
+                if (Orientation) mesh.Faces.AddFace(faceVertIndexes[0], faceVertIndexes[1], faceVertIndexes[2]);
+                else mesh.Faces.AddFace(faceVertIndexes[2], faceVertIndexes[1], faceVertIndexes[0]);
+
+            }
+
+            return mesh;
+
+
+        }
+
+
+        /// <summary>
+        /// This is the abstract march method to be implemented in the particularizations of the class.
+        /// This is the single thread version 
+        /// </summary>
+        /// <param name="cube">individual cube of voxels</param>
+        /// <param name="mesh">the gradually built mesh</param>
+        /// <param name="vertDict">dictionary to keep score of the interpolated cube edge vertices as mesh vertices</param>
+        protected abstract void March(Cube cube, Mesh mesh, IDictionary<Tuple<Voxel, Voxel>, int> vertDict);
+
+        /// <summary>
+        /// This is the abstract march method to be implemented in the particularizations of the class.
+        /// This is the multiThread one 
+        /// </summary>
+        /// <param name="cube">individual cube of voxels</param>
+        /// <param name="meshFaceVerts">a thread safe collection to hold the faces as arrays of voxels</param>
+        /// <param name="vertDict">dictionary to keep score of the interpolated cube edge vertices as Points in 3d space</param>
+        protected abstract void March_Para(Cube cube, ConcurrentStack<Tuple<Voxel, Voxel>[]> meshFaceVerts, ConcurrentDictionary<Tuple<Voxel, Voxel>, Point3d> vertDict);
 
         public virtual double InterpolateValue(double v0, double v1)
         {
@@ -115,7 +214,7 @@ namespace PolyFramework.Utilities
             //EdgeVert = new Point3d[12];
         }
 
-        protected override void March(Cube cube, Mesh mesh, Dictionary<Tuple<Voxel, Voxel>, int> vertDict)
+        protected override void March(Cube cube, Mesh mesh, IDictionary<Tuple<Voxel, Voxel>, int> vertDict)
         {
             // flag for bitwise storing of cube vertex position above or below isoVal
             // 0000 0000 = all vertices below isoVal = no intersections 
@@ -195,6 +294,81 @@ namespace PolyFramework.Utilities
 
         }
 
+        protected override void March_Para(Cube cube, ConcurrentStack<Tuple<Voxel, Voxel>[]> meshFaceVerts, ConcurrentDictionary<Tuple<Voxel, Voxel>, Point3d> vertDict)
+        {
+            // flag for bitwise storing of cube vertex position above or below isoVal
+            // 0000 0000 = all vertices below isoVal = no intersections 
+            // 0000 0111 = 4 vertices below isoVal = some intersections  
+            int flagIndex = 0;
+
+            // find the vertices inside the surface (smaller than the isoVal)
+            // for each vertex the for loop moves a 1 value one step to the left 00000001 becomes 00000010 
+            // if the vertex voxel value is smaller than isoVal a bitwise or is performed 
+            // 00001000 |=
+            // 00010000 in any bit is 1 the result is 1
+            // 00011000 this means that vertex 3 and 4 are below the isoVal 
+            // the int equiv of this is 24 or hex 0x18
+
+            for (int i = 0; i < 8; i++) if (cube.Vertices[i].Value <= IsoVal) flagIndex |= 1 << i;
+
+            // edgeFlags is retrieved from a table 
+            // edgeFlags is a 12 bit flag similar to the above vertex flag for the cube 
+            // 0000 0001 0011 means that edge 0,1 and 4 are intersected
+
+            int edgeFlags = CubeEdgeFlags[flagIndex];
+
+            // edgeFlags == 0 means no intersection 
+
+            if (edgeFlags == 0) return;
+
+            // else test all edges and determine the intersection point through value average between the cube vertices 
+
+            for (int i = 0; i < 12; i++)
+            {
+                if ((edgeFlags & (1 << i)) != 0) // this tests the bit nr i if is not 0. Test is performed through bitwise or
+                {
+                    // make a unique topological identifier for each edge (edgeVertex) of the cube system. 
+                    var edgeKey = new Tuple<Voxel, Voxel>(cube.Vertices[Cube.EdgeConnection[i, 0]], cube.Vertices[Cube.EdgeConnection[i, 1]]);
+                    // test to see if edge (edgeVertex) is in the vertexDict
+                    // this ensures each edgeVertex is computed only once and reused in constant time
+                    if (!vertDict.ContainsKey(edgeKey))
+                    {
+                        // interpolate point from values 
+                        var param = InterpolateValue(cube.Vertices[Cube.EdgeConnection[i, 0]].Value, cube.Vertices[Cube.EdgeConnection[i, 1]].Value);
+                         
+                        vertDict[edgeKey]= ((cube.Vertices[Cube.EdgeConnection[i, 1]].Location - cube.Vertices[Cube.EdgeConnection[i, 0]].Location) * param +
+                        cube.Vertices[Cube.EdgeConnection[i, 0]].Location);
+                        // hash it in the vertDict 
+                        
+                    }
+                }
+            }
+
+            // create the triangles - max 5 per cube 
+
+            for (int i = 0; i < 5; i++)
+            {
+                if (TriangleConnectionTable[flagIndex, i * 3] < 0) break; // if the next value for index is -1 in the table, break 
+                // face list of vertices 
+                var faceVertIndexes = new Tuple<Voxel, Voxel>[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    // get the edgeVert index from the table - it should be there 
+                    var vertIndex = TriangleConnectionTable[flagIndex, i * 3 + j];
+                    // recompute the unique topological voxel key
+                    // all cubes have the same topology -> get the cube edge(edgeVert) index from the TriangleConnectionTable - get end voxels for the key  
+                    var edgeKey = new Tuple<Voxel, Voxel>(cube.Vertices[Cube.EdgeConnection[vertIndex, 0]], cube.Vertices[Cube.EdgeConnection[vertIndex, 1]]);
+                    // the key should be in the vertDict - if not something is wrong.
+                    faceVertIndexes[j] = edgeKey;
+                }
+
+                // orientation now takes place in create method 
+                meshFaceVerts.Push(faceVertIndexes);
+
+                
+
+            }
+        }
 
 
         /// <summary>
@@ -541,11 +715,30 @@ namespace PolyFramework.Utilities
         {
             return $"X={Ix}, Y={Iy}, Z={Iz}, Value={Value}";
         }
+        /*
+        public override bool Equals(object obj)
+        {
+            if (obj is Voxel)
+            {
+                var otherVox = obj as Voxel;
+                return this.Ix == otherVox.Ix && this.Iy == otherVox.Iy && this.Iy == otherVox.Iz;
+            }
+
+            else return false;
+            
+        }
+
+        public override int GetHashCode()
+        {
+            return Ix * 100000000 + Iy * 10000 + Iz;
+            //return base.GetHashCode();
+        }
+        */
     }
 
     public class Voxels
     {
-        public Dictionary<Tuple<int, int, int>, Voxel> _voxelDict = new Dictionary<Tuple<int, int, int>, Voxel>();
+        public IDictionary<Tuple<int, int, int>, Voxel> _voxelDict = new ConcurrentDictionary<Tuple<int, int, int>, Voxel>();
         public Voxel this[Tuple<int, int, int> key
             ]
         {
@@ -560,7 +753,7 @@ namespace PolyFramework.Utilities
         public int YCount { get; set; }
         public int ZCount { get; set; }
 
-        public Voxels(Plane plane, double x_size, double y_size, double z_size, int x_count, int y_count, int z_count)
+        public Voxels(Plane plane, double x_size, double y_size, double z_size, int x_count, int y_count, int z_count, bool para = false)
         {
             Plane = plane;
             XSize = x_size;
@@ -569,14 +762,32 @@ namespace PolyFramework.Utilities
             XCount = x_count;
             YCount = y_count;
             ZCount = z_count;
-            for (int ix = 0; ix < x_count; ix++)
+
+            if (para)
             {
-                for (int iy = 0; iy < y_count; iy++)
+                Parallel.For(0, x_count, ix =>
                 {
-                    for (int iz = 0; iz < z_count; iz++)
+                    for (int iy = 0; iy < y_count; iy++)
                     {
-                        _voxelDict[new Tuple<int, int, int>(ix, iy, iz)] = new Voxel(plane.Origin +
-                            plane.XAxis * x_size * ix + plane.YAxis * y_size * iy + plane.ZAxis * z_size * iz, ix, iy, iz);
+                        for (int iz = 0; iz < z_count; iz++)
+                        {
+                            _voxelDict[new Tuple<int, int, int>(ix, iy, iz)] = new Voxel(plane.Origin +
+                                plane.XAxis * x_size * ix + plane.YAxis * y_size * iy + plane.ZAxis * z_size * iz, ix, iy, iz);
+                        }
+                    }
+                });
+            }
+            else
+            {
+                for (int ix = 0; ix < x_count; ix++)
+                {
+                    for (int iy = 0; iy < y_count; iy++)
+                    {
+                        for (int iz = 0; iz < z_count; iz++)
+                        {
+                            _voxelDict[new Tuple<int, int, int>(ix, iy, iz)] = new Voxel(plane.Origin +
+                                plane.XAxis * x_size * ix + plane.YAxis * y_size * iy + plane.ZAxis * z_size * iz, ix, iy, iz);
+                        }
                     }
                 }
             }
@@ -622,11 +833,11 @@ namespace PolyFramework.Utilities
                         {
                             var ind = new Tuple<int, int, int>(ix, iy, iz);
 
-                            if (crv.ClosestPoint(this[ind].Location, out double t, geoPiece.dist * 20))
+                            if (crv.ClosestPoint(this[ind].Location, out double t, geoPiece.dist * 10))
                             {
 
                                 var val = squared ? this[ind].Location.DistanceToSquared(crv.PointAt(t)) - Math.Pow(geoPiece.dist, 2) : this[ind].Location.DistanceTo(crv.PointAt(t)) - geoPiece.dist;
-                                
+
                                 if (double.IsNaN(this[ind].Value) || this[ind].Value > val)
                                     this[ind].Value = val;
                             }
@@ -647,7 +858,79 @@ namespace PolyFramework.Utilities
 
         }
 
-        public void SetValuesFromLine(Curve line, double distance)
+
+
+        public void SetValuesFromGeos_Para(IList<GeometryBase> geos, IList<double> distances, bool squared = false)
+        {
+            // For each geopiece - find min/max point or box with some wiggle room for each geometry
+            // Box aligned - get corners - add wiggle value - get all points inside the box using coordinate system 
+            // For each point in box calculate value - if existent value is closer to 0 keep existent value else or if NAN write new
+
+            Parallel.ForEach(geos.Zip(distances, (x, y) => new { geo = x, dist = y }), geoPiece =>// (var geoPiece in )
+            {
+                Curve crv = null;
+                if (geoPiece.geo.ObjectType == Rhino.DocObjects.ObjectType.Curve)
+                {
+                    crv = geoPiece.geo as Curve;
+                }
+                else
+                {
+                    throw new PolyFrameworkException("For now we can only work with curves");
+                }
+                var alBox = geoPiece.geo.GetBoundingBox(Plane);
+
+
+                var voxelX_start = (int)Math.Floor((alBox.Min.X - geoPiece.dist) / XSize) - 1; voxelX_start = voxelX_start < 0 ? 0 : voxelX_start;
+                var voxelY_start = (int)Math.Floor((alBox.Min.Y - geoPiece.dist) / YSize) - 1; voxelY_start = voxelY_start < 0 ? 0 : voxelY_start;
+                var voxelZ_start = (int)Math.Floor((alBox.Min.Z - geoPiece.dist) / ZSize) - 1; voxelZ_start = voxelZ_start < 0 ? 0 : voxelZ_start;
+                var voxelX_end = (int)Math.Ceiling((alBox.Max.X + geoPiece.dist) / XSize) + 1; voxelX_end = voxelX_end > XCount ? XCount : voxelX_end;
+                var voxelY_end = (int)Math.Ceiling((alBox.Max.Y + geoPiece.dist) / YSize) + 1; voxelY_end = voxelY_end > YCount ? YCount : voxelY_end;
+                var voxelZ_end = (int)Math.Ceiling((alBox.Max.Z + geoPiece.dist) / ZSize) + 1; voxelZ_end = voxelZ_end > ZCount ? ZCount : voxelZ_end;
+
+                for (int ix = voxelX_start; ix < voxelX_end; ix++)
+                {
+                    for (int iy = voxelY_start; iy < voxelY_end; iy++)
+                    {
+                        for (int iz = voxelZ_start; iz < voxelZ_end; iz++)
+                        {
+                            var ind = new Tuple<int, int, int>(ix, iy, iz);
+
+                            if (crv.ClosestPoint(this[ind].Location, out double t, geoPiece.dist * 10))
+                            {
+
+                                var val = squared ? this[ind].Location.DistanceToSquared(crv.PointAt(t)) - Math.Pow(geoPiece.dist, 2) : this[ind].Location.DistanceTo(crv.PointAt(t)) - geoPiece.dist;
+
+                                if (double.IsNaN(this[ind].Value) || this[ind].Value > val)
+                                    this[ind].Value = val;
+                            }
+
+
+
+                        }
+                    }
+                }
+            });
+
+
+            // voxel y start z start 
+            // voxel x,y,z end 
+            //alBox. // modify the the coordinates to ge the plane aligned coordinates for the box 
+            //use the coordingates to determine the box of voxels that containes the geometry  
+
+
+
+        }
+
+
+
+
+
+        /// <summary>
+        /// This needs to be updated ... does not work 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="distance"></param>
+        private void SetValuesFromLine(Curve line, double distance)
         {
             var alBox = line.GetBoundingBox(Plane);
 
@@ -677,7 +960,7 @@ namespace PolyFramework.Utilities
 
         }
 
-        public static Voxels MakeFromGeo(IList<GeometryBase> geoList, IList<Double> distList, Plane startPlane, int xDiv, int yDiv, int zDiv)
+        public static Voxels MakeFromGeo(IList<GeometryBase> geoList, IList<Double> distList, Plane startPlane, int xDiv, int yDiv, int zDiv, bool para = false )
         {
             var maxDist = distList.Max();
             var allBox = new BoundingBox();
@@ -692,15 +975,33 @@ namespace PolyFramework.Utilities
 
             var voxPlane = startPlane; voxPlane.Origin = originNew;
 
-            var voxels = new Voxels(voxPlane, allBox.Diagonal.X / xDiv, allBox.Diagonal.Y / yDiv, allBox.Diagonal.Z / zDiv, xDiv, yDiv, zDiv);
+            var voxels = new Voxels(voxPlane, allBox.Diagonal.X / xDiv, allBox.Diagonal.Y / yDiv, allBox.Diagonal.Z / zDiv, xDiv, yDiv, zDiv, para);
 
             return voxels;
         }
 
-        public Dictionary<Tuple<int, int, int>, Voxel> ExtractVoxels()
+        /// <summary>
+        /// Uses a box and divisions to make the voxels
+        /// </summary>
+        /// <param name="box"></param>
+        /// <param name="xDiv"></param>
+        /// <param name="yDiv"></param>
+        /// <param name="zDiv"></param>
+        /// <param name="para"></param>
+        /// <returns></returns>
+        public static Voxels MakeFromBox(Box box, int xDiv, int yDiv, int zDiv, bool para = false)
+        {
+            var x_step = (box.X.Max - box.X.Min) / xDiv;
+            var y_step = (box.Y.Max - box.Y.Min) / yDiv;
+            var z_step = (box.Z.Max - box.Z.Min) / zDiv;
+            var voxels = new Voxels(box.Plane, x_step, y_step, z_step, xDiv, yDiv, zDiv, para);
+            return voxels;
+        }
+
+        public IDictionary<Tuple<int, int, int>, Voxel> ExtractVoxels()
         {
             return _voxelDict;
-            
+
         }
 
     }
