@@ -2204,17 +2204,19 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
 
 
 
-        public double VolumeSphCyl(double minRadius, double maxRadius, out IList<Mesh> geometry, out Dictionary<int, double> edgeRadiusesOut,  bool createGeo = false)
+        public double VolumeSphCyl(double minRadius, double maxRadius, 
+            out IList<Mesh> geometry, out Dictionary<int, double> edgeRadiusesOut,
+            IList<int> excludedEdges, bool createGeo = false )
         {
 
             var intEdges = new List<PFEdge>();
             var halfExtEdges = new List<PFEdge>();
             var fullExtEdges = new List<PFEdge>();
-
+            var excluded = new HashSet<int>(excludedEdges);
 
             foreach (var edge in Edges)
             {
-                if (edge.Id > 0)
+                if (edge.Id > 0 && !excluded.Contains(edge.Id) )
                 {
                     if (edge.Vertices[0].External && edge.Vertices[1].External) fullExtEdges.Add(edge);
                     else if (edge.Vertices[0].External ^ edge.Vertices[1].External) halfExtEdges.Add(edge);
@@ -2277,7 +2279,8 @@ The problematic geometry was baked in Orange in the <<Error_Geometry>> layer");
 
                 foreach (var vert in intVertices)
                 {
-                    geometry.Add(Mesh.CreateFromSphere(new Sphere(vert.Point, vertRadiuses[vert]), 24, 24));
+                    if (vertRadiuses[vert] > double.Epsilon)
+                        geometry.Add(Mesh.CreateFromSphere(new Sphere(vert.Point, vertRadiuses[vert]), 24, 24));
                 }
 
             }

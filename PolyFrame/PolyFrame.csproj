@@ -110,7 +110,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>Copy "$(TargetPath)" "C:\Users\andrei\AppData\Roaming\McNeel\Rhinoceros\6.0\Plug-ins\PolyFrame (f005086a-916c-4425-bf85-c3dc46f47ff2)\0.1.7.2\PolyFrame\Rhino 6\$(ProjectName).rhp"
+    <PostBuildEvent>Copy "$(TargetPath)" "C:\Users\andrei\AppData\Roaming\McNeel\Rhinoceros\6.0\Plug-ins\PolyFrame (f005086a-916c-4425-bf85-c3dc46f47ff2)\0.1.7.5\PolyFrame\Rhino 6\$(ProjectName).rhp"
 REM Erase "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

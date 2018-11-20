@@ -121,7 +121,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>REM Copy "$(TargetPath)" "C:\Users\andrei\AppData\Roaming\McNeel\Rhinoceros\6.0\Plug-ins\PolyFrame (f005086a-916c-4425-bf85-c3dc46f47ff2)\0.1.7.2\PolyFrame\Rhino 6\PolyFramework.dll"
+    <PostBuildEvent>Copy "$(TargetPath)" "C:\Users\andrei\AppData\Roaming\McNeel\Rhinoceros\6.0\Plug-ins\PolyFrame (f005086a-916c-4425-bf85-c3dc46f47ff2)\0.1.7.5\PolyFrame\Rhino 6\PolyFramework.dll"
 Copy "$(TargetPath)" "C:\PolyFramework\PolyFramework.dll"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -8,3 +8,6 @@ SingleFaces - Single Faces
 PolySurfaces - PolySurfaces
 Mesh - multiple faces, or polylines all => mesh cells 
 Mesh single face or single ngon all = > mesh face 
+
+Mesh input - single face (non-ngon )
+Mesh input multiple faces (detect planar areas - up to tolerance ) - use Kruskal - decompose and construct polyframe. 

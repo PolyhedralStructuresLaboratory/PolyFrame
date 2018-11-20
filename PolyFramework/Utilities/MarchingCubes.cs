@@ -897,8 +897,9 @@ namespace PolyFramework.Utilities
 
                             if (crv.ClosestPoint(this[ind].Location, out double t, geoPiece.dist * 10))
                             {
-
-                                var val = squared ? this[ind].Location.DistanceToSquared(crv.PointAt(t)) - Math.Pow(geoPiece.dist, 2) : this[ind].Location.DistanceTo(crv.PointAt(t)) - geoPiece.dist;
+                                //here method for eval gradually
+                                var val = squared ? this[ind].Location.DistanceToSquared(crv.PointAt(t)) - 
+                                Math.Pow(geoPiece.dist, 2) : this[ind].Location.DistanceTo(crv.PointAt(t)) - geoPiece.dist;
 
                                 if (double.IsNaN(this[ind].Value) || this[ind].Value > val)
                                     this[ind].Value = val;
