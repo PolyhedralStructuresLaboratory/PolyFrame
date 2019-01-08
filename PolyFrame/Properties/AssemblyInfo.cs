@@ -11,7 +11,7 @@ using Rhino.PlugIns;
 [assembly: PlugInDescription(DescriptionType.Phone, "-")]
 [assembly: PlugInDescription(DescriptionType.Fax, "-")]
 [assembly: PlugInDescription(DescriptionType.Organization, "Polyhedral Structures Lab, School of Design, University of Pennsylvania")]
-[assembly: PlugInDescription(DescriptionType.UpdateUrl, "https://psl.design.upenn.edu/")]
+[assembly: PlugInDescription(DescriptionType.UpdateUrl, "https://psl.design.upenn.edu/polyframe/")]
 [assembly: PlugInDescription(DescriptionType.WebSite, "https://psl.design.upenn.edu/")]
 
 // Icons should be Windows .ico files and contain 32-bit images in the following sizes: 16, 24, 32, 48, and 256.
@@ -52,8 +52,8 @@ using Rhino.PlugIns;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.1.7.6")]
-[assembly: AssemblyFileVersion("0.1.7.6")]
+[assembly: AssemblyVersion("0.1.7.9")]
+[assembly: AssemblyFileVersion("0.1.7.9")]
 
 // Make compatible with Rhino Installer Engine
 [assembly: AssemblyInformationalVersion("2")]
