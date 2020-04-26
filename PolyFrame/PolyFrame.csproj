@@ -13,6 +13,8 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -60,11 +62,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PFBuild.cs" />
     <Compile Include="PFPipe.cs" />
     <Compile Include="PFPlanarize.cs" />
     <Compile Include="PFPerp.cs" />
     <Compile Include="PFDual.cs" />
+    <Compile Include="PFMagnitude.cs" />
     <Compile Include="PFSwitch.cs" />
     <Compile Include="PolyFramePlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -93,6 +97,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Resources\splash_model_2_900x423.jpg" />
   </ItemGroup>
   <ItemGroup>
@@ -110,7 +115,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>Copy "$(TargetPath)" "C:\Users\andrei\AppData\Roaming\McNeel\Rhinoceros\6.0\Plug-ins\PolyFrame (f005086a-916c-4425-bf85-c3dc46f47ff2)\0.1.7.5\PolyFrame\Rhino 6\$(ProjectName).rhp"
+    <PostBuildEvent>Copy "$(TargetPath)" "C:\Users\andrei\AppData\Roaming\McNeel\Rhinoceros\6.0\Plug-ins\PolyFrame (f005086a-916c-4425-bf85-c3dc46f47ff2)\0.1.8.0\PolyFrame\Rhino 6\$(ProjectName).rhp"
 REM Erase "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

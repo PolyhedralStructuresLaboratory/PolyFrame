@@ -29,7 +29,7 @@ using Rhino.PlugIns;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("PolyFrame")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -52,8 +52,8 @@ using Rhino.PlugIns;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.1.7.9")]
-[assembly: AssemblyFileVersion("0.1.7.9")]
+[assembly: AssemblyVersion("0.1.8.1")]
+[assembly: AssemblyFileVersion("0.1.8.1")]
 
 // Make compatible with Rhino Installer Engine
 [assembly: AssemblyInformationalVersion("2")]

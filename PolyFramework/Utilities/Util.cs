@@ -24,11 +24,11 @@ namespace PolyFramework
 
     public static partial class Util
     {
-        
+
         // disassemble Breps into surfaces, points and lines 
         public static IList<Brep> ExtractFaces(IList<Brep> brpList)
         {
-            
+
             List<Brep> faces = new List<Brep>();
             foreach (Brep brp in brpList)
             {
@@ -333,34 +333,52 @@ namespace PolyFramework
 
             if (inValue <= 1.00 && inValue >= 0.75)
             {
-                int R = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 0, 20 });
+                int R = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 7, 13 });
+                int G = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 37, 62 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 61, 111 });
+
+                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 0, 20 });
                 int G = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 20, 80 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 50, 110 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 50, 110 });*/
                 return System.Drawing.Color.FromArgb(R, G, B);
             }
             if (inValue < 0.75 && inValue >= 0.5)
             {
-                int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 20, 70 });
+                int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 13, 14 });
+                int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 62, 81 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 111, 150 });
+
+
+                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 20, 70 });
                 int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 80, 140 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 110, 176 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 110, 176 });*/
                 return System.Drawing.Color.FromArgb(R, G, B);
             }
             if (inValue < 0.5 && inValue >= 0.25)
             {
-                int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 70, 120 });
+                int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 14, 39 });
+                int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 81, 114 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 150, 169 });
+
+                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 70, 120 });
                 int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 140, 200 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 176, 230 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 176, 230 });*/
                 return System.Drawing.Color.FromArgb(R, G, B);
 
             }
             if (inValue < 0.25 && inValue >= 0.0)
             {
-                int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 120, 170 });
+                int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 39, 139 });
+                int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 114, 164 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 169, 204 });
+
+
+                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 120, 170 });
                 int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 200, 255 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 230, 255 });
+                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 230, 255 });*/
                 return System.Drawing.Color.FromArgb(R, G, B);
             }
-
+            
 
             return System.Drawing.Color.White;
 
@@ -444,7 +462,7 @@ namespace PolyFramework
 
         public static double ValueUnitizer(double origVal, List<double> origList, List<double> unitList)
         {
-            if (origList[0] == origList[1]) return unitList[0];
+            if (origList.Count == 1 || origList[0] == origList[1]) return unitList[0];
             return unitList[0] + (origVal - origList[0]) * (unitList[1] - unitList[0]) / (origList[1] - origList[0]);
         }
 
@@ -601,7 +619,7 @@ namespace PolyFramework
                         // this needs to be update after the offset part... based on the geometry 
                     }
                 }
-                
+
 
 
                 vertEdgesId[vert] = (vertPropDict["Edges"] as ArrayList).Cast<int>().ToList();
@@ -645,7 +663,7 @@ namespace PolyFramework
                     edge.MaxLength = Convert.ToDouble(edgePropDict["MaxLength"]);
                     edge.InfluenceCoef = Convert.ToDouble(edgePropDict["InfluenceCoef"]);
                 }
-              
+
 
                 // put all properties that can't be filled right now in their dictionaries
                 edgePair[edge] = (int)edgePropDict["Pair"]; // for keeping score of the pair easier 

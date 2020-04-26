@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Rhino.Geometry;
 using System.Collections.Concurrent;
 
+
 namespace PolyFramework.Utilities
 {
     public enum MarchType
@@ -335,11 +336,11 @@ namespace PolyFramework.Utilities
                     {
                         // interpolate point from values 
                         var param = InterpolateValue(cube.Vertices[Cube.EdgeConnection[i, 0]].Value, cube.Vertices[Cube.EdgeConnection[i, 1]].Value);
-                         
-                        vertDict[edgeKey]= ((cube.Vertices[Cube.EdgeConnection[i, 1]].Location - cube.Vertices[Cube.EdgeConnection[i, 0]].Location) * param +
+
+                        vertDict[edgeKey] = ((cube.Vertices[Cube.EdgeConnection[i, 1]].Location - cube.Vertices[Cube.EdgeConnection[i, 0]].Location) * param +
                         cube.Vertices[Cube.EdgeConnection[i, 0]].Location);
                         // hash it in the vertDict 
-                        
+
                     }
                 }
             }
@@ -365,7 +366,7 @@ namespace PolyFramework.Utilities
                 // orientation now takes place in create method 
                 meshFaceVerts.Push(faceVertIndexes);
 
-                
+
 
             }
         }
@@ -711,9 +712,12 @@ namespace PolyFramework.Utilities
             Iz = iz;
         }
 
+
+        public double Factor { get; set; } = 1.0;
+
         public override string ToString()
         {
-            return $"X={Ix}, Y={Iy}, Z={Iz}, Value={Value}";
+            return $"X={Ix}, Y={Iy}, Z={Iz}, Value={Value}, Factor={Factor}";
         }
         /*
         public override bool Equals(object obj)
@@ -898,7 +902,7 @@ namespace PolyFramework.Utilities
                             if (crv.ClosestPoint(this[ind].Location, out double t, geoPiece.dist * 10))
                             {
                                 //here method for eval gradually
-                                var val = squared ? this[ind].Location.DistanceToSquared(crv.PointAt(t)) - 
+                                var val = squared ? this[ind].Location.DistanceToSquared(crv.PointAt(t)) -
                                 Math.Pow(geoPiece.dist, 2) : this[ind].Location.DistanceTo(crv.PointAt(t)) - geoPiece.dist;
 
                                 if (double.IsNaN(this[ind].Value) || this[ind].Value > val)
@@ -922,7 +926,76 @@ namespace PolyFramework.Utilities
 
         }
 
+        public void SetValuesFromEquation()
+        {
+            for (int i = 0; i < this.XCount; i++)
+            {
+                for (int j = 0; j < this.YCount; j++)
+                {
+                    for (int k = 0; k < this.ZCount; k++)
+                    {
+                        var key = new Tuple<int, int, int>(i, j, k);
+                        var vx = this[key];
+                        var fact = (0.5 * k / (ZCount - 1) + 0.1 * ((ZCount - 1) - k) / (ZCount - 1));
+                        var x = vx.Location.X * fact;
+                        var y = vx.Location.Y * fact;
+                        var z = vx.Location.Z * fact;
 
+                        //Rhino.RhinoApp.WriteLine(vx.ToString());
+                        double val1 = (Math.Sin(x) * Math.Cos(y) +
+                                   Math.Sin(y) * Math.Cos(z) +
+                                   Math.Sin(z) * Math.Cos(x));
+
+                        
+
+
+                        double val2 = Math.Cos(x) + Math.Cos(y) + Math.Cos(z);
+                        vx.Value = (val1 * i / (XCount - 1) + val2 * ((XCount - 1) - i) / (XCount - 1));
+                           
+                        // size interpolation 
+                        //if (double.IsNaN(val)) throw new Exception("Val is nan!!");
+                        this[key] = vx;
+                        //Rhino.RhinoApp.WriteLine(val.ToString());
+                        // 
+
+                    }
+                }
+            }
+        }
+
+        /*
+         * double val2 = (Math.Sin(x) * Math.Sin(y) * Math.Sin(z) +
+                                        Math.Sin(x) * Math.Cos(y) * Math.Cos(z) +
+                                        Math.Cos(x) * Math.Sin(y) * Math.Cos(z) +
+                                        Math.Cos(x) * Math.Cos(y) * Math.Sin(z));
+         * 
+         * 
+          //dd = 0.1 * Math.Cos(pi2 * nx) * Math.Cos(2.0 * pi2 * (nz - ny)) - 0.1 * Math.Cos(pi2 * (3.0 * ny - 2.0 * nz)) + 0.2 * Math.Sin(2.0 * pi2 * (nz + ny));
+          //Sherk surface
+          // dd = Math.Exp(pz) * Math.Cos(px) - Math.Cos(py);
+          //dd = pz * Math.Cos(px) - Math.Cos(py);
+          //dd = pz * pz * Math.Cos(px) - Math.Cos(py);
+          //Swartz P
+          //dd = Math.Cos(px) + Math.Cos(py) + Math.Cos(pz);
+
+          //Diamond
+          dd = Math.Sin(px) * Math.Sin(py) * Math.Sin(pz) +
+            Math.Sin(px) * Math.Cos(py) * Math.Cos(pz) +
+            Math.Cos(px) * Math.Sin(py) * Math.Cos(pz) +
+            Math.Cos(px) * Math.Cos(py) * Math.Sin(pz);
+
+          //Gyroid
+          dd = Math.Cos(px) * Math.Sin(py) +
+          Math.Cos(py) * Math.Sin(pz) +
+          Math.Cos(pz) * Math.Sin(px);
+
+          //Neovius
+
+          dd = 3.0 * (Math.Cos(px) + Math.Cos(py) + Math.Cos(pz)) +
+          4.0 * (Math.Cos(px) * Math.Cos(py) * Math.Cos(pz));
+
+          //Math.Cos(px) * Math.Cos(py) - Math.Cos(pz) * Math.Cos(py)
+         */
 
 
 
@@ -961,7 +1034,7 @@ namespace PolyFramework.Utilities
 
         }
 
-        public static Voxels MakeFromGeo(IList<GeometryBase> geoList, IList<Double> distList, Plane startPlane, int xDiv, int yDiv, int zDiv, bool para = false )
+        public static Voxels MakeFromGeo(IList<GeometryBase> geoList, IList<Double> distList, Plane startPlane, int xDiv, int yDiv, int zDiv, bool para = false)
         {
             var maxDist = distList.Max();
             var allBox = new BoundingBox();

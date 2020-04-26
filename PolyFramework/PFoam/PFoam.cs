@@ -57,7 +57,7 @@ namespace PolyFramework
 
         public PFoam()
         {
-            if (new DateTime(year: 2019, month: 12, day: 31).CompareTo(DateTime.Now) < 0)
+            if (new DateTime(year: 2020, month: 6, day: 30).CompareTo(DateTime.Now) < 0)
             {
                 Rhino.RhinoApp.WriteLine("This version of PolyFrame has expired. Please download a new version from  https://psl.design.upenn.edu/polyframe/");
                 throw new PolyFrameworkException("This version of PolyFrame has expired. Please download a new version from  https://psl.design.upenn.edu/polyframe/");

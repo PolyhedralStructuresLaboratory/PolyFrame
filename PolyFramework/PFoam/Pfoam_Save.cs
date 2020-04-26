@@ -14,6 +14,17 @@ namespace PolyFramework
     public partial class PFoam
     {
         /// <summary>
+        /// Return true if the diagram is form ; 
+        /// </summary>
+        /// <returns></returns>
+        public bool IsForm()
+        {
+            return Edges.Where(e => e.Id > 0).Any(x => x.Faces.Count < 2);
+        }
+
+
+
+        /// <summary>
         /// Saves the foam as a group of color-coded lines in the Rhino document 
         /// For each line a user dictionary is saved with the following entries:
         /// EdgeId, StartVertexId, EndVertexId
