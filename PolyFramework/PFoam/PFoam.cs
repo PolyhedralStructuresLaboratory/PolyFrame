@@ -11,6 +11,7 @@ using System.IO;
 using System.Web.Script.Serialization;
 using static PolyFramework.Util;
 using System.Threading;
+using Rhino;
 
 namespace PolyFramework
 {
@@ -57,9 +58,12 @@ namespace PolyFramework
 
         public PFoam()
         {
-            if (new DateTime(year: 2020, month: 6, day: 30).CompareTo(DateTime.Now) < 0)
+            // This is put in place to remind the average user to update the plug in to correct errors and get the latest functionalities.
+            // We all know you can change this or remove it but it is put in place for a reason. Thank you for not changing this. 
+            if (new DateTime(year: 2020, month: 12, day: 31).CompareTo(DateTime.Now) < 0)
             {
                 Rhino.RhinoApp.WriteLine("This version of PolyFrame has expired. Please download a new version from  https://psl.design.upenn.edu/polyframe/");
+                Rhino.UI.Dialogs.ShowMessage("This version of PolyFrame has expired. Please download a new version from  https://psl.design.upenn.edu/polyframe/", "Expired PlugIn");
                 throw new PolyFrameworkException("This version of PolyFrame has expired. Please download a new version from  https://psl.design.upenn.edu/polyframe/");
             }
 

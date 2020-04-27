@@ -337,9 +337,7 @@ namespace PolyFramework
                 int G = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 37, 62 });
                 int B = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 61, 111 });
 
-                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 0, 20 });
-                int G = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 20, 80 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 1, 0.75 }, new List<double> { 50, 110 });*/
+
                 return System.Drawing.Color.FromArgb(R, G, B);
             }
             if (inValue < 0.75 && inValue >= 0.5)
@@ -349,9 +347,6 @@ namespace PolyFramework
                 int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 111, 150 });
 
 
-                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 20, 70 });
-                int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 80, 140 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.75, 0.5 }, new List<double> { 110, 176 });*/
                 return System.Drawing.Color.FromArgb(R, G, B);
             }
             if (inValue < 0.5 && inValue >= 0.25)
@@ -360,9 +355,7 @@ namespace PolyFramework
                 int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 81, 114 });
                 int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 150, 169 });
 
-                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 70, 120 });
-                int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 140, 200 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.5, 0.25 }, new List<double> { 176, 230 });*/
+           
                 return System.Drawing.Color.FromArgb(R, G, B);
 
             }
@@ -373,9 +366,7 @@ namespace PolyFramework
                 int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 169, 204 });
 
 
-                /*int R = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 120, 170 });
-                int G = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 200, 255 });
-                int B = (Int32)ValueUnitizer(inValue, new List<double> { 0.25, 0.0 }, new List<double> { 230, 255 });*/
+               
                 return System.Drawing.Color.FromArgb(R, G, B);
             }
             
